@@ -381,12 +381,29 @@ export async function saveNotificationSettings(formData: FormData) {
     await setSetting('telegram_chat_id', chatId)
     await setSetting('telegram_language', language)
 
+    // Email settings
+    const resendApiKey = (formData.get('resendApiKey') as string || '').trim()
+    const resendFromEmail = (formData.get('resendFromEmail') as string || '').trim()
+    const resendFromName = (formData.get('resendFromName') as string || '').trim()
+    const resendEnabled = formData.get('resendEnabled') === 'on'
+
+    await setSetting('resend_api_key', resendApiKey)
+    await setSetting('resend_from_email', resendFromEmail)
+    await setSetting('resend_from_name', resendFromName)
+    await setSetting('resend_enabled', resendEnabled ? 'true' : 'false')
+
     revalidatePath('/admin/notifications')
 }
 
 export async function testNotification() {
     await checkAdmin()
     return await sendTelegramMessage("🔔 Test notification from LDC Shop")
+}
+
+export async function testEmailNotification(to: string) {
+    await checkAdmin()
+    const { testResendEmail } = await import("@/lib/email")
+    return await testResendEmail(to)
 }
 
 async function ensureCategoriesTable() {

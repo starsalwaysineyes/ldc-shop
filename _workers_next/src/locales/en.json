@@ -259,6 +259,22 @@
                 "step4Desc": "After saving, click the 'Send Test Message' button to verify your configuration. If you receive a message, you're all set!",
                 "language": "Notification Language",
                 "languageHint": "Choose the language for Telegram notification messages"
+            },
+            "email": {
+                "title": "Email Notifications",
+                "desc": "Automatically send card keys to buyers via email after purchase (powered by Resend)",
+                "enabled": "Enable email sending",
+                "apiKey": "Resend API Key",
+                "apiKeyHint": "Get your API Key from:",
+                "fromEmail": "Sender Email",
+                "fromEmailHint": "Must be from a domain verified in Resend",
+                "fromName": "Sender Name",
+                "testLabel": "Test Email",
+                "testPlaceholder": "Enter test email address",
+                "testButton": "Send Test",
+                "testSuccess": "Test email sent! Check your inbox.",
+                "testFailed": "Test email failed: {{error}}",
+                "enterTestEmail": "Please enter a test email address"
             }
         },
         "export": {

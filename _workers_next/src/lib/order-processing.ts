@@ -3,6 +3,7 @@ import { orders, cards, products, loginUsers as users } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { isPaymentOrder } from "@/lib/payment";
 import { notifyAdminPaymentSuccess } from "@/lib/notifications";
+import { sendOrderEmail } from "@/lib/email";
 
 export async function processOrderFulfillment(orderId: string, paidAmount: number, tradeNo: string) {
     const order = await db.query.orders.findFirst({
@@ -100,6 +101,16 @@ export async function processOrderFulfillment(orderId: string, paidAmount: numbe
                     email: order.email,
                     tradeNo: tradeNo
                 });
+
+                // Send email with card keys
+                if (order.email) {
+                    sendOrderEmail({
+                        to: order.email,
+                        orderId: orderId,
+                        productName: product?.name || 'Product',
+                        cardKeys: cardKeys.join('\n')
+                    }).catch(err => console.error('[Email] Send failed:', err));
+                }
 
                 return { success: true, status: 'processed' };
             } else {
@@ -206,6 +217,16 @@ export async function processOrderFulfillment(orderId: string, paidAmount: numbe
                 email: order.email,
                 tradeNo: tradeNo
             });
+
+            // Send email with card keys
+            if (order.email) {
+                sendOrderEmail({
+                    to: order.email,
+                    orderId: orderId,
+                    productName: product?.name || 'Product',
+                    cardKeys: joinedKeys
+                }).catch(err => console.error('[Email] Send failed:', err));
+            }
         } else {
             // Paid but no stock
             await db.update(orders)

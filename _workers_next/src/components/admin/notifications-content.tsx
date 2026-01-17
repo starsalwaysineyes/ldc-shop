@@ -7,14 +7,18 @@ import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-import { saveNotificationSettings, testNotification } from "@/actions/admin"
-import { Bell, CreditCard, RotateCcw, ExternalLink } from "lucide-react"
+import { saveNotificationSettings, testNotification, testEmailNotification } from "@/actions/admin"
+import { Bell, CreditCard, RotateCcw, ExternalLink, Mail } from "lucide-react"
 
 interface NotificationsContentProps {
     settings: {
         telegramBotToken: string
         telegramChatId: string
         telegramLanguage: string
+        resendApiKey: string
+        resendFromEmail: string
+        resendFromName: string
+        resendEnabled: boolean
     }
 }
 
@@ -25,6 +29,14 @@ export function NotificationsContent({ settings }: NotificationsContentProps) {
     const [language, setLanguage] = useState(settings.telegramLanguage || 'zh')
     const [isLoading, setIsLoading] = useState(false)
     const [isTesting, setIsTesting] = useState(false)
+
+    // Email settings
+    const [resendApiKey, setResendApiKey] = useState(settings.resendApiKey || '')
+    const [resendFromEmail, setResendFromEmail] = useState(settings.resendFromEmail || '')
+    const [resendFromName, setResendFromName] = useState(settings.resendFromName || '')
+    const [resendEnabled, setResendEnabled] = useState(settings.resendEnabled || false)
+    const [isTestingEmail, setIsTestingEmail] = useState(false)
+    const [testEmail, setTestEmail] = useState('')
 
     async function handleSave(formData: FormData) {
         setIsLoading(true)
@@ -51,6 +63,26 @@ export function NotificationsContent({ settings }: NotificationsContentProps) {
             toast.error(t('common.error'))
         } finally {
             setIsTesting(false)
+        }
+    }
+
+    async function handleTestEmail() {
+        if (!testEmail) {
+            toast.error(t('admin.settings.email.enterTestEmail'))
+            return
+        }
+        setIsTestingEmail(true)
+        try {
+            const res = await testEmailNotification(testEmail)
+            if (res.success) {
+                toast.success(t('admin.settings.email.testSuccess'))
+            } else {
+                toast.error(t('admin.settings.email.testFailed', { error: res.error }))
+            }
+        } catch (e: any) {
+            toast.error(t('common.error'))
+        } finally {
+            setIsTestingEmail(false)
         }
     }
 
@@ -150,6 +182,95 @@ export function NotificationsContent({ settings }: NotificationsContentProps) {
                             )}
                         </div>
                     </form>
+                </CardContent>
+            </Card>
+
+            {/* 邮件通知配置 */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Mail className="h-5 w-5" />
+                        {t('admin.settings.email.title')}
+                    </CardTitle>
+                    <CardDescription>{t('admin.settings.email.desc')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form action={handleSave} className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                id="resendEnabled"
+                                name="resendEnabled"
+                                checked={resendEnabled}
+                                onChange={e => setResendEnabled(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300"
+                            />
+                            <Label htmlFor="resendEnabled">{t('admin.settings.email.enabled')}</Label>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>{t('admin.settings.email.apiKey')}</Label>
+                            <Input
+                                name="resendApiKey"
+                                value={resendApiKey}
+                                onChange={e => setResendApiKey(e.target.value)}
+                                placeholder="re_xxxxxxxx"
+                                type="password"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                {t('admin.settings.email.apiKeyHint')} <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">resend.com</a>
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>{t('admin.settings.email.fromEmail')}</Label>
+                            <Input
+                                name="resendFromEmail"
+                                value={resendFromEmail}
+                                onChange={e => setResendFromEmail(e.target.value)}
+                                placeholder="noreply@yourdomain.com"
+                            />
+                            <p className="text-xs text-muted-foreground">{t('admin.settings.email.fromEmailHint')}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>{t('admin.settings.email.fromName')}</Label>
+                            <Input
+                                name="resendFromName"
+                                value={resendFromName}
+                                onChange={e => setResendFromName(e.target.value)}
+                                placeholder="LDC Shop"
+                            />
+                        </div>
+
+                        {/* Hidden fields for telegram settings */}
+                        <input type="hidden" name="telegramBotToken" value={token} />
+                        <input type="hidden" name="telegramChatId" value={chatId} />
+                        <input type="hidden" name="telegramLanguage" value={language} />
+
+                        <div className="flex gap-4">
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? t('common.processing') : t('admin.settings.notifications.save')}
+                            </Button>
+                        </div>
+                    </form>
+
+                    {resendApiKey && resendFromEmail && (
+                        <div className="mt-4 pt-4 border-t">
+                            <Label>{t('admin.settings.email.testLabel')}</Label>
+                            <div className="flex gap-2 mt-2">
+                                <Input
+                                    value={testEmail}
+                                    onChange={e => setTestEmail(e.target.value)}
+                                    placeholder={t('admin.settings.email.testPlaceholder') || ''}
+                                    className="flex-1"
+                                />
+                                <Button variant="secondary" onClick={handleTestEmail} disabled={isTestingEmail}>
+                                    {isTestingEmail ? t('common.processing') : t('admin.settings.email.testButton')}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

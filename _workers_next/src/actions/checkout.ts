@@ -8,6 +8,7 @@ import { generateOrderId, generateSign } from "@/lib/crypto"
 import { eq, sql, and, or, isNull, lt } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { notifyAdminPaymentSuccess } from "@/lib/notifications"
+import { sendOrderEmail } from "@/lib/email"
 
 export async function createOrder(productId: string, quantity: number = 1, email?: string, usePoints: boolean = false) {
     const session = await auth()
@@ -344,6 +345,17 @@ export async function createOrder(productId: string, quantity: number = 1, email
                 console.log('[Checkout] Points payment notification sent successfully');
             } catch (err) {
                 console.error('[Notification] Points payment notify failed:', err);
+            }
+
+            // Send email with card keys
+            const orderEmail = email || user?.email;
+            if (orderEmail) {
+                sendOrderEmail({
+                    to: orderEmail,
+                    orderId,
+                    productName: product.name,
+                    cardKeys: joinedKeys
+                }).catch(err => console.error('[Email] Points payment email failed:', err));
             }
 
         } else {
