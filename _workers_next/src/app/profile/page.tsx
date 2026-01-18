@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { orders, loginUsers } from "@/lib/db/schema"
 import { eq, desc, sql } from "drizzle-orm"
+import { normalizeTimestampMs } from "@/lib/db/queries"
 import { ProfileContent } from "@/components/profile-content"
 
 export const dynamic = 'force-dynamic'
@@ -68,7 +69,7 @@ export default async function ProfilePage() {
         })
             .from(orders)
             .where(eq(orders.userId, userId))
-            .orderBy(desc(orders.createdAt))
+            .orderBy(desc(normalizeTimestampMs(orders.createdAt)))
             .limit(5)
     } catch {
         // Ignore errors

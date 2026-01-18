@@ -350,7 +350,8 @@ export async function createOrder(productId: string, quantity: number = 1, email
                     deliveredAt: new Date(),
                     tradeNo: 'POINTS_REDEMPTION',
                     pointsUsed: pointsToUse,
-                    quantity: qty
+                    quantity: qty,
+                    createdAt: new Date()
                 });
                 orderInserted = true
 
@@ -393,7 +394,8 @@ export async function createOrder(productId: string, quantity: number = 1, email
                     status: 'pending',
                     pointsUsed: pointsToUse,
                     currentPaymentId: orderId, // Store current payment ID
-                    quantity: qty
+                    quantity: qty,
+                    createdAt: new Date()
                 });
                 orderInserted = true
             }

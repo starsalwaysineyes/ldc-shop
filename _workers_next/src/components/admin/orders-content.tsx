@@ -57,7 +57,6 @@ export function AdminOrdersContent({
     pageSize,
     query,
     status,
-    fulfillment,
 }: {
     orders: Order[]
     total: number
@@ -65,13 +64,11 @@ export function AdminOrdersContent({
     pageSize: number
     query: string
     status: string
-    fulfillment: string
 }) {
     const { t } = useI18n()
     const router = useRouter()
     const [queryValue, setQueryValue] = useState(query || "")
     const [statusValue, setStatusValue] = useState<string>(status || "all")
-    const [fulfillmentValue, setFulfillmentValue] = useState<string>(fulfillment || "all")
     const [selected, setSelected] = useState<Record<string, boolean>>({})
 
     const getStatusBadgeVariant = (status: string | null) => {
@@ -98,12 +95,8 @@ export function AdminOrdersContent({
     }, [status])
 
     useEffect(() => {
-        setFulfillmentValue(fulfillment || "all")
-    }, [fulfillment])
-
-    useEffect(() => {
         setSelected({})
-    }, [orders, page, status, fulfillment, query])
+    }, [orders, page, status, query])
 
     const statusOptions = [
         { key: 'all', label: t('common.all') },
@@ -124,19 +117,16 @@ export function AdminOrdersContent({
         router.push(buildUrl({
             q: next.q ?? queryValue,
             status: next.status ?? statusValue,
-            fulfillment: fulfillmentValue,
             page: next.page ?? 1,
             pageSize,
         }))
     }
 
-    const applyAllFilters = (next: { q?: string; status?: string; fulfillment?: string; page?: number; pageSize?: number }) => {
+    const applyAllFilters = (next: { q?: string; status?: string; page?: number; pageSize?: number }) => {
         const nextStatus = next.status ?? statusValue
-        const nextFulfillment = next.fulfillment ?? fulfillmentValue
         router.push(buildUrl({
             q: next.q ?? queryValue,
             status: nextStatus,
-            fulfillment: nextFulfillment,
             page: next.page ?? 1,
             pageSize: next.pageSize ?? pageSize,
         }))
@@ -180,28 +170,6 @@ export function AdminOrdersContent({
             </div>
 
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex flex-wrap gap-2">
-                    {[
-                        { key: 'all', label: t('admin.orders.fulfillmentAll') },
-                        { key: 'needsDelivery', label: t('admin.orders.needsDelivery') },
-                    ].map((f) => (
-                        <Button
-                            key={f.key}
-                            type="button"
-                            variant={fulfillmentValue === f.key ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => {
-                                setFulfillmentValue(f.key)
-                                // Avoid contradictory filters
-                                const nextStatus = f.key === 'needsDelivery' ? 'all' : statusValue
-                                setStatusValue(nextStatus)
-                                applyAllFilters({ fulfillment: f.key, status: nextStatus, page: 1 })
-                            }}
-                        >
-                            {f.label}
-                        </Button>
-                    ))}
-                </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="text-sm text-muted-foreground">
                         {t('admin.orders.selectedCount', { count: selectedIds.length })}
@@ -234,12 +202,12 @@ export function AdminOrdersContent({
                 </div>
                 <div className="flex items-center gap-2">
                     <Button asChild type="button" variant="outline" size="sm">
-                        <a href={exportUrl({ type: 'orders', format: 'csv', q: query, status, fulfillment })}>
+                        <a href={exportUrl({ type: 'orders', format: 'csv', q: query, status })}>
                             {t('admin.orders.exportCsv')}
                         </a>
                     </Button>
                     <Button asChild type="button" variant="outline" size="sm">
-                        <a href={exportUrl({ type: 'orders', format: 'csv', includeSecrets: 1, q: query, status, fulfillment })}>
+                        <a href={exportUrl({ type: 'orders', format: 'csv', includeSecrets: 1, q: query, status })}>
                             {t('admin.orders.exportCsvSecrets')}
                         </a>
                     </Button>
@@ -247,11 +215,10 @@ export function AdminOrdersContent({
                         type="button"
                         variant="outline"
                         size="sm"
-                        disabled={!queryValue.trim() && statusValue === 'all' && fulfillmentValue === 'all'}
+                        disabled={!queryValue.trim() && statusValue === 'all'}
                         onClick={() => {
                             setQueryValue("")
                             setStatusValue("all")
-                            setFulfillmentValue("all")
                             router.push(buildUrl({ page: 1, pageSize }))
                         }}
                     >

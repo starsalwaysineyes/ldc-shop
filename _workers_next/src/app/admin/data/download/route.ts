@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { orders, reviews, settings, products, cards, loginUsers, categories, refundRequests, dailyCheckins } from "@/lib/db/schema"
 import { and, desc, eq, or, sql } from "drizzle-orm"
-import { getProducts } from "@/lib/db/queries"
+import { getProducts, normalizeTimestampMs } from "@/lib/db/queries"
 
 function requireAdminUsername(username?: string | null) {
   const adminUsers = process.env.ADMIN_USERS?.toLowerCase().split(",") || []
@@ -93,7 +93,7 @@ export async function GET(req: Request) {
 
       const orderRows = await db.query.orders.findMany({
         where: whereExpr,
-        orderBy: [desc(orders.createdAt)],
+        orderBy: [desc(normalizeTimestampMs(orders.createdAt))],
       })
       const mapped = orderRows.map((o: any) => ({
         orderId: o.orderId,

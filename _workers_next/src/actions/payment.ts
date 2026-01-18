@@ -51,7 +51,8 @@ export async function createPaymentOrder(amountInput: number | string, payeeInpu
             username: user?.username || null,
             payee,
             status: 'pending',
-            currentPaymentId: orderId
+            currentPaymentId: orderId,
+            createdAt: new Date()
         })
     })
 
