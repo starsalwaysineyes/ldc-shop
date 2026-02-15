@@ -13,7 +13,7 @@
     "d1_databases": [
         {
             "binding": "DB",
-            "database_name": "ldc-shop-next"
+            "database_name": "43f81845-ebd7-4b36-8ccf-51275b8574d7"
         }
     ],
     "observability": {
