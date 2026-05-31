@@ -23,7 +23,7 @@ export function NavigationPill({ items, selectedKey, onSelect }: NavigationPillP
 
         if (activeElement) {
             setIndicatorStyle({
-                left: activeElement.offsetLeft,
+                left: container.offsetLeft + activeElement.offsetLeft,
                 width: activeElement.offsetWidth,
             })
         } else {
@@ -31,7 +31,7 @@ export function NavigationPill({ items, selectedKey, onSelect }: NavigationPillP
             const firstElement = container.children[0] as HTMLElement | undefined
             if (firstElement) {
                 setIndicatorStyle({
-                    left: firstElement.offsetLeft,
+                    left: container.offsetLeft + firstElement.offsetLeft,
                     width: firstElement.offsetWidth,
                 })
             }
